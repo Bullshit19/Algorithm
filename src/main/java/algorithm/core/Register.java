@@ -14,7 +14,11 @@ public abstract class Register {
 	public final static String EMPLOYER = "employer";
 	public final static String START_DATE = "startDate";
 	public final static String END_DATE = "endDate";
+	public final static String PROVENANCE = "provenance";
 	
+	
+	//All the get* methods remove the attribute to optimize the comparison
+	//To have the complete map of the attributes, use the getHashMapAttributes method
 	public String get(String attribute){
 		return null;
 	}

@@ -28,6 +28,13 @@ public class ResedaRegisterBean extends Register{
 	}
 	
 	@Override
+	public String get(String attribute){
+		String value = attributes.get(attribute);
+		attributes.remove(attribute);
+		return value;
+	}
+	
+	@Override
 	public String getName() {
 		String value = attributes.get(Register.NAME);
 		attributes.remove(Register.NAME);

@@ -40,6 +40,13 @@ public class OutRegisterBean extends Register {
 	public HashMap<String, String> getHashMapAttributes(){
 		return attributesBackup;
 	}
+
+	@Override
+	public String get(String attribute){
+		String value = attributes.get(attribute);
+		attributes.remove(attribute);
+		return value;
+	}
 	
 	@Override
 	public String getName() {

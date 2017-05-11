@@ -1,6 +1,7 @@
 package algorithm;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
@@ -60,14 +61,15 @@ public class BlackBox implements IBlackBox{
 		HashMap<String, String> resedaAttributes;
 		HashMap<String, String> outAttributes;
 		OutRegisterBean out;
+		Calendar cal;
 		
 		for(Register regSir : sirhus){
 			for(Register regRes : reseda){
 //				Chech if the registers are equal
 				if(regSir.equals(regRes)){
 					nothing(regRes, regRes.getId());
-					sirhus.remove(regSir);
-					reseda.remove(regRes);
+//					sirhus.remove(regSir);
+//					reseda.remove(regRes);
 				}
 				else{
 					for(String dis : discriminants){
@@ -79,43 +81,102 @@ public class BlackBox implements IBlackBox{
 								update(regSir,regRes.getId());									
 							}//end dates ==
 							
+							
+							//cas dates de fin différentes
 							else if(regSir.getDates().get(Register.START_DATE).equals(regRes.getDates().get(Register.START_DATE)) && !regSir.getDates().get(Register.END_DATE).equals(regRes.getDates().get(Register.END_DATE))){
 							//if endDate != && endDateSir > endDateRes ==> update Sinon 2 périodes
-								if(regSir.getDates().get(Register.END_DATE).before(regRes.getDates().get(Register.END_DATE))){
+								if(regSir.getDates().get(Register.END_DATE).after(regRes.getDates().get(Register.END_DATE))){
+									
+									resedaAttributes = regRes.getHashMapAttributes();
+									sirhusAttributes = regSir.getHashMapAttributes();
+									if(!resedaAttributes.get(Register.PROVENANCE).equals(sirhusAttributes.get(Register.PROVENANCE))){
+										resedaAttributes.put(Register.PROVENANCE, sirhusAttributes.get(Register.PROVENANCE));
+									}
 									update(regSir,regRes.getId());
 								}
 								else{
-									
+									resedaAttributes = regRes.getHashMapAttributes();
+									sirhusAttributes = regSir.getHashMapAttributes();
+									cal = regSir.getDates().get(Register.END_DATE);
+									sirhusAttributes.put(Register.END_DATE, cal.toString());
+									out = new OutRegisterBean(sirhusAttributes, OutRegisterBean.ADD);
+									add(out);
+									cal.add(Calendar.DATE, +1);
+									resedaAttributes.put(Register.START_DATE, cal.toString());
+									if(!resedaAttributes.get(Register.PROVENANCE).equals(sirhusAttributes.get(Register.PROVENANCE))){
+										resedaAttributes.put(Register.PROVENANCE, sirhusAttributes.get(Register.PROVENANCE));
+									}
+									out = new OutRegisterBean(resedaAttributes, OutRegisterBean.UPDATE);
+									update(out, regRes.getId());
 								}
-								//TODO
+								
 							}//end startDate== endDate !=
 							
+							
+							//cas dates début différentes
 							else if(!regSir.getDates().get(Register.START_DATE).equals(regRes.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.END_DATE).equals(regRes.getDates().get(Register.END_DATE))){
-								//if start != ==> if attributes =! ==> 
-								//TODO: Test date avant / après
+								
 								if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE))){
 									delete(regRes, regRes.getId());
 									add(regSir);
 								}
 								//Si date intermédiaire : conservation de la première période et début de la seconde à la date Sirhus
-								//Prévoir set Date
-//									if(regSir.getAttributes().equals(regRes.getAttributes())){
-//										delete(regRes, regRes.getId());
-//										add(regSir, null);
-//									}
+								else if(regSir.getDates().get(Register.START_DATE).after(regRes.getDates().get(Register.START_DATE)) && !regSir.getDates().get(Register.START_DATE).after(regRes.getDates().get(Register.END_DATE))){
+									if(!regSir.getAttributes().equals(regRes.getAttributes())){
+										resedaAttributes = regRes.getHashMapAttributes();
+										sirhusAttributes = regSir.getHashMapAttributes();
+										cal = regSir.getDates().get(Register.START_DATE);
+										cal.add(Calendar.DATE, -1);
+										//conservation de la période resStartDate-SirStartDate
+										resedaAttributes.put(Register.END_DATE, cal.toString());
+										out = new OutRegisterBean(resedaAttributes, OutRegisterBean.UPDATE);
+										update(out, regRes.getId());
+										add(regSir);
+									}//end if attributes =!
 									else{
-										//TODO:
+										update(regSir, regRes.getId());
 									}
+									
+								}//end if sirStartDate entre resStartDate et ResEndDate
 							}//end startDate != endDate== 
 							
+							
+							
+							//cas dates début et fin différentes
 							else if (!regSir.getDates().get(Register.START_DATE).equals(regRes.getDates().get(Register.START_DATE)) && !regSir.getDates().get(Register.END_DATE).equals(regRes.getDates().get(Register.END_DATE))){
 								//TODO: Test date avant / après
-								if(regSir.getAttributes().equals(regRes.getAttributes())){
-//									update(regSir, regRes.getId());
-								}
+								if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE))){
+									if(regSir.getAttributes().equals(regRes.getAttributes())){
+//										update(regSir, regRes.getId());
+									}//end if attributes ==
+								}//end if sir startDate before
+								
+								
+								
 							}//end Dates !=
+							
+							
+							
+							//cas dates égales
+							else{
+								//TODO
+								if(regSir.getAttributes().equals(regRes.getAttributes())){
+									
+								}
+								update(regSir, regRes.getId());
+								
+								
+								
+							}
+							
 						}//end discriminants ==
 						
+						
+						//cas discriminant différent : nouvel enregistrement
+						else{
+							nothing(regRes, regRes.getId());
+							add(regSir);
+						}
 					}//end for discriminants
 				}//end else equality
 				
