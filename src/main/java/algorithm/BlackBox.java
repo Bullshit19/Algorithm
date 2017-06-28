@@ -68,8 +68,8 @@ public class BlackBox implements IBlackBox{
 //				Chech if the registers are equal
 				if(regSir.equals(regRes)){
 					nothing(regRes, regRes.getId());
-//					sirhus.remove(regSir);
-//					reseda.remove(regRes);
+					sirhus.remove(regSir);
+					reseda.remove(regRes);
 				}
 				else{
 					for(String dis : discriminants){
@@ -78,7 +78,9 @@ public class BlackBox implements IBlackBox{
 							
 							if(regSir.getDates().get(Register.START_DATE).equals(regRes.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.END_DATE).equals(regRes.getDates().get(Register.END_DATE))){
 								//if the dates are equals : attribut diff = update else seen if register == reg	
-								update(regSir,regRes.getId());									
+								update(regSir,regRes.getId());
+								sirhus.remove(regSir);
+								reseda.remove(regRes);
 							}//end dates ==
 							
 							
@@ -93,6 +95,8 @@ public class BlackBox implements IBlackBox{
 										resedaAttributes.put(Register.PROVENANCE, sirhusAttributes.get(Register.PROVENANCE));
 									}
 									update(regSir,regRes.getId());
+									sirhus.remove(regSir);
+									reseda.remove(regRes);
 								}
 								else{
 									resedaAttributes = regRes.getHashMapAttributes();
@@ -108,9 +112,11 @@ public class BlackBox implements IBlackBox{
 									}
 									out = new OutRegisterBean(resedaAttributes, OutRegisterBean.UPDATE);
 									update(out, regRes.getId());
+									sirhus.remove(regSir);
+									reseda.remove(regRes);
 								}
 								
-							}//end startDate== endDate !=
+							}//end dates fin =!
 							
 							
 							//cas dates début différentes
@@ -119,9 +125,15 @@ public class BlackBox implements IBlackBox{
 								if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE))){
 									delete(regRes, regRes.getId());
 									add(regSir);
+									sirhus.remove(regSir);
+									reseda.remove(regRes);
 								}
+								
+								
 								//Si date intermédiaire : conservation de la première période et début de la seconde à la date Sirhus
 								else if(regSir.getDates().get(Register.START_DATE).after(regRes.getDates().get(Register.START_DATE)) && !regSir.getDates().get(Register.START_DATE).after(regRes.getDates().get(Register.END_DATE))){
+									
+									//Cas attributs différents : mise à jour et ajout d'une ligne
 									if(!regSir.getAttributes().equals(regRes.getAttributes())){
 										resedaAttributes = regRes.getHashMapAttributes();
 										sirhusAttributes = regSir.getHashMapAttributes();
@@ -132,25 +144,75 @@ public class BlackBox implements IBlackBox{
 										out = new OutRegisterBean(resedaAttributes, OutRegisterBean.UPDATE);
 										update(out, regRes.getId());
 										add(regSir);
+										sirhus.remove(regSir);
+										reseda.remove(regRes);
 									}//end if attributes =!
+									
+									//Cas attributs égaux : mise à jour
 									else{
 										update(regSir, regRes.getId());
+										sirhus.remove(regSir);
+										reseda.remove(regRes);
 									}
 									
 								}//end if sirStartDate entre resStartDate et ResEndDate
-							}//end startDate != endDate== 
+							}//end dates début !=
 							
 							
 							
 							//cas dates début et fin différentes
 							else if (!regSir.getDates().get(Register.START_DATE).equals(regRes.getDates().get(Register.START_DATE)) && !regSir.getDates().get(Register.END_DATE).equals(regRes.getDates().get(Register.END_DATE))){
 								//TODO: Test date avant / après
-								if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE))){
+								//a vérifier
+								
+								//cas date début Sirhus antérieure et date fin Sirhus postérieure
+								if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE)) && regRes.getDates().get(Register.END_DATE).before(regSir.getDates().get(Register.END_DATE))){
+									
+									//cas date début Sirhus antérieure et date fin Sirhus postérieure
 									if(regSir.getAttributes().equals(regRes.getAttributes())){
-//										update(regSir, regRes.getId());
+										delete(regRes, regRes.getId());
+										add(regSir);
+										sirhus.remove(regSir);
+										reseda.remove(regRes);
 									}//end if attributes ==
+								
+									else{
+										//TODO
+									}
+								
 								}//end if sir startDate before
 								
+								
+								//cas date début sirhus antérieure et date fin sirhus intermédiaire
+								else if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.END_DATE).before(regRes.getDates().get(Register.END_DATE)) && regRes.getDates().get(Register.START_DATE).before(regSir.getDates().get(Register.END_DATE))){
+									//TODO
+									
+								}
+								
+								//cas dates sirhus antérieures
+								else if(regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.END_DATE).before(regRes.getDates().get(Register.START_DATE))){
+									//TODO
+								}
+								
+								
+								//cas date début Sirhus intermédiaire et date fin postérieure
+								else if(regRes.getDates().get(Register.START_DATE).before(regSir.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.END_DATE)) && regRes.getDates().get(Register.END_DATE).before(regSir.getDates().get(Register.END_DATE))){
+									//TODO
+								}
+								
+								
+								//cas date début Sirhus intermédiaire et date fin intermédiaire
+								else if(regRes.getDates().get(Register.START_DATE).before(regSir.getDates().get(Register.START_DATE)) && regSir.getDates().get(Register.START_DATE).before(regRes.getDates().get(Register.END_DATE)) && regSir.getDates().get(Register.END_DATE).before(regRes.getDates().get(Register.END_DATE)) && regRes.getDates().get(Register.START_DATE).before(regSir.getDates().get(Register.END_DATE))){
+									//TODO
+									
+								}
+								
+							
+								//cas dates postérieures
+								else if(regSir.getDates().get(Register.START_DATE).after(regRes.getDates().get(Register.END_DATE)) && regSir.getDates().get(Register.END_DATE).after(regRes.getDates().get(Register.END_DATE))){
+									//TODO
+								}
+									
 								
 								
 							}//end Dates !=
@@ -159,11 +221,16 @@ public class BlackBox implements IBlackBox{
 							
 							//cas dates égales
 							else{
-								//TODO
 								if(regSir.getAttributes().equals(regRes.getAttributes())){
-									
+									nothing(regRes, regRes.getId());
+									sirhus.remove(regSir);
+									reseda.remove(regRes);
 								}
-								update(regSir, regRes.getId());
+								else{
+									update(regSir, regRes.getId());
+									sirhus.remove(regSir);
+									reseda.remove(regRes);
+								}
 								
 								
 								
@@ -176,10 +243,14 @@ public class BlackBox implements IBlackBox{
 						else{
 							nothing(regRes, regRes.getId());
 							add(regSir);
+							sirhus.remove(regSir);
+							reseda.remove(regRes);
 						}
 					}//end for discriminants
 				}//end else equality
 				
+				
+				//TODO: cas plusieurs enregistrements
 				
 			}//end for reseda
 		}//end for sirhus
